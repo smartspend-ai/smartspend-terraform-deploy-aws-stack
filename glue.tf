@@ -18,7 +18,7 @@ resource "aws_glue_catalog_database" "smartspend" {
 resource "aws_glue_catalog_table" "ec2_instances" {
   name          = "ec2_instances"
   database_name = aws_glue_catalog_database.smartspend.name
-  description   = "EC2 instance data collected by SmartSpend AI"
+  description   = "EC2 instance data collected by SmartSpend AI with CloudWatch metrics"
   table_type    = "EXTERNAL_TABLE"
 
   parameters = {
@@ -35,6 +35,7 @@ resource "aws_glue_catalog_table" "ec2_instances" {
       serialization_library = "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
     }
 
+    # Basic instance info
     columns {
       name = "instance_id"
       type = "string"
@@ -80,6 +81,16 @@ resource "aws_glue_catalog_table" "ec2_instances" {
       type = "string"
     }
     columns {
+      name = "public_dns_name"
+      type = "string"
+    }
+    columns {
+      name = "private_dns_name"
+      type = "string"
+    }
+
+    # AMI info
+    columns {
       name = "image_id"
       type = "string"
     }
@@ -92,13 +103,29 @@ resource "aws_glue_catalog_table" "ec2_instances" {
       type = "string"
     }
     columns {
-      name = "cpu_utilization"
-      type = "double"
-    }
-    columns {
-      name = "analyse_usage"
+      name = "os_version"
       type = "string"
     }
+
+    # Security groups and volumes (JSON arrays)
+    columns {
+      name = "security_groups"
+      type = "string"
+    }
+    columns {
+      name = "ebs_volume_ids"
+      type = "string"
+    }
+    columns {
+      name = "ebs_volume_types"
+      type = "string"
+    }
+    columns {
+      name = "ebs_sizes_gb"
+      type = "string"
+    }
+
+    # Autoscaling
     columns {
       name = "is_in_autoscaling_group"
       type = "boolean"
@@ -107,6 +134,122 @@ resource "aws_glue_catalog_table" "ec2_instances" {
       name = "autoscaling_group_name"
       type = "string"
     }
+
+    # CPU metrics (aggregate)
+    columns {
+      name = "cpu_utilization"
+      type = "double"
+    }
+    columns {
+      name = "analyse_usage"
+      type = "string"
+    }
+
+    # Network metrics (aggregate)
+    columns {
+      name = "network_in_bytes"
+      type = "double"
+    }
+    columns {
+      name = "network_out_bytes"
+      type = "double"
+    }
+    columns {
+      name = "network_in_gb"
+      type = "double"
+    }
+    columns {
+      name = "network_out_gb"
+      type = "double"
+    }
+
+    # EBS Disk I/O metrics (aggregate)
+    columns {
+      name = "ebs_read_ops"
+      type = "double"
+    }
+    columns {
+      name = "ebs_write_ops"
+      type = "double"
+    }
+    columns {
+      name = "ebs_read_bytes"
+      type = "double"
+    }
+    columns {
+      name = "ebs_write_bytes"
+      type = "double"
+    }
+    columns {
+      name = "ebs_read_gb"
+      type = "double"
+    }
+    columns {
+      name = "ebs_write_gb"
+      type = "double"
+    }
+
+    # Time-series metrics (JSON arrays with timestamp/value pairs)
+    columns {
+      name = "cpu_timeseries"
+      type = "string"
+    }
+    columns {
+      name = "network_in_timeseries"
+      type = "string"
+    }
+    columns {
+      name = "network_out_timeseries"
+      type = "string"
+    }
+    columns {
+      name = "ebs_read_ops_timeseries"
+      type = "string"
+    }
+    columns {
+      name = "ebs_write_ops_timeseries"
+      type = "string"
+    }
+    columns {
+      name = "ebs_read_bytes_timeseries"
+      type = "string"
+    }
+    columns {
+      name = "ebs_write_bytes_timeseries"
+      type = "string"
+    }
+
+    # Detailed JSON objects
+    columns {
+      name = "vpc_info"
+      type = "string"
+    }
+    columns {
+      name = "subnet_info"
+      type = "string"
+    }
+    columns {
+      name = "network_interfaces"
+      type = "string"
+    }
+    columns {
+      name = "security_groups_detailed"
+      type = "string"
+    }
+    columns {
+      name = "ebs_volumes_detailed"
+      type = "string"
+    }
+    columns {
+      name = "instance_type_specs"
+      type = "string"
+    }
+    columns {
+      name = "autoscaling_info"
+      type = "string"
+    }
+
+    # Metadata
     columns {
       name = "tags"
       type = "string"
