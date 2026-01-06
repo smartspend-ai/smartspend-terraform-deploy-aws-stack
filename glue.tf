@@ -434,12 +434,26 @@ resource "aws_glue_catalog_table" "s3_buckets" {
 resource "aws_glue_catalog_table" "cur_data" {
   name          = "cur_data"
   database_name = aws_glue_catalog_database.smartspend.name
-  description   = "Cost and Usage Report data collected by SmartSpend AI"
+  description   = "Cost and Usage Report data collected by SmartSpend AI (partitioned by year/month/day)"
   table_type    = "EXTERNAL_TABLE"
 
   parameters = {
     classification  = "parquet"
     compressionType = "snappy"
+  }
+
+  # Partition keys for CUR data
+  partition_keys {
+    name = "year"
+    type = "int"
+  }
+  partition_keys {
+    name = "month"
+    type = "int"
+  }
+  partition_keys {
+    name = "day"
+    type = "int"
   }
 
   storage_descriptor {

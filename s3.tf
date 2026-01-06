@@ -63,7 +63,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "data_bucket" {
     status = "Enabled"
 
     expiration {
-      days = 90
+      days = 180
     }
   }
 }
@@ -79,7 +79,7 @@ resource "aws_s3_bucket_policy" "data_bucket" {
         Sid    = "AllowCrossAccountAccess"
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::${var.ssai_account_id}:root"
+          AWS = "arn:aws:iam::${var.ssai_account_id}:role/ssai-cross-account-role-${var.stack_name}-${local.region}"
         }
         Action = [
           "s3:GetObject",

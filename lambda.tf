@@ -14,7 +14,8 @@ resource "aws_lambda_function" "collectors" {
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.11"
   timeout       = 900
-  memory_size   = 1024
+  # CUR collector needs more memory (3008 MB) for processing large CUR files
+  memory_size   = each.key == "cur" ? 3008 : 1024
 
   s3_bucket = var.lambda_package_bucket
   s3_key    = each.value.s3_key
