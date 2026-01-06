@@ -146,17 +146,26 @@ resource "aws_lambda_function" "initial_trigger" {
 # Initial Data Collection Trigger (equivalent to CloudFormation Custom Resource)
 # -----------------------------------------------------------------------------
 
-# Use aws_lambda_invocation to trigger initial collection (no AWS CLI required)
-# This is more reliable than null_resource with local-exec
-data "aws_lambda_invocation" "initial_data_collection" {
+# Use terraform_data resource to trigger initial collection only on first create
+# This mimics CloudFormation CustomResource behavior (runs once on create, not on every apply)
+resource "terraform_data" "initial_data_collection" {
   count = var.enable_initial_collection ? 1 : 0
 
-  function_name = aws_lambda_function.initial_trigger.function_name
+  # Only re-trigger if the initial_trigger function ARN changes (effectively once on create)
+  triggers_replace = [
+    aws_lambda_function.initial_trigger.arn
+  ]
 
-  input = jsonencode({
-    source      = "initial-trigger"
-    RequestType = "Create"
-  })
+  provisioner "local-exec" {
+    command = <<-EOT
+      aws lambda invoke \
+        --function-name ${aws_lambda_function.initial_trigger.function_name} \
+        --invocation-type Event \
+        --payload '{"source": "initial-trigger", "RequestType": "Create"}' \
+        --cli-binary-format raw-in-base64-out \
+        /tmp/initial_trigger_response.json
+    EOT
+  }
 
   depends_on = [
     aws_lambda_function.collectors,

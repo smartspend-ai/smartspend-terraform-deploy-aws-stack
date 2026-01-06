@@ -440,6 +440,15 @@ resource "aws_glue_catalog_table" "cur_data" {
   parameters = {
     classification  = "parquet"
     compressionType = "snappy"
+    # Enable partition projection for automatic partition discovery
+    "projection.enabled"          = "true"
+    "projection.year.type"        = "integer"
+    "projection.year.range"       = "2020,2030"
+    "projection.month.type"       = "integer"
+    "projection.month.range"      = "1,12"
+    "projection.day.type"         = "integer"
+    "projection.day.range"        = "1,31"
+    "storage.location.template"   = "s3://${aws_s3_bucket.data_bucket.id}/data/cur_data/year=$${year}/month=$${month}/day=$${day}"
   }
 
   # Partition keys for CUR data
